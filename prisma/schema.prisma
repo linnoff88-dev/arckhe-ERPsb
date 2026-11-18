@@ -1,0 +1,461 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================== AUTH ====================
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  emailVerified DateTime?
+  name          String
+  image         String?
+  provider      String       @default("google")
+  passwordHash  String?
+  accounts      Account[]
+  tenants       UserTenant[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ==================== TENANT ====================
+
+model Tenant {
+  id                  String       @id @default(cuid())
+  name                String
+  document            String?
+  type                String       @default("INFORMAL")
+  plan                String       @default("FREE")
+  businessType        String?
+  monthlyRevenue      String?
+  onboardingCompleted Boolean      @default(false)
+  address             Json?
+  phone               String?
+  email               String?
+  logo                String?
+  users               UserTenant[]
+  clientes            Cliente[]
+  contasReceber       ContaReceber[]
+  fornecedores        Fornecedor[]
+  produtos            Produto[]
+  formasPagamento     FormaPagamento[]
+  contasPagar         ContaPagar[]
+  vendas              Venda[]
+  orcamentos          Orcamento[]
+  pixCharges          PixCharge[]
+  notifications       Notification[]
+  configFiscal        ConfigFiscal?
+  notasFiscais        NotaFiscal[]
+  whatsappMessages    WhatsAppMessage[]
+  lembreteConfig      LembreteConfig?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@map("tenants")
+}
+
+model UserTenant {
+  id        String   @id @default(cuid())
+  userId    String
+  tenantId  String
+  role      String   @default("OWNER")
+  isActive  Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tenantId])
+  @@map("user_tenants")
+}
+
+// ==================== CADASTROS ====================
+
+model Cliente {
+  id            String         @id @default(cuid())
+  tenantId      String
+  name          String
+  phone         String
+  email         String?
+  document      String?
+  address       Json?
+  notes         String?
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contasReceber ContaReceber[]
+  vendas        Venda[]
+  orcamentos        Orcamento[]
+  whatsappMessages  WhatsAppMessage[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([tenantId, name])
+  @@index([tenantId, phone])
+  @@map("clientes")
+}
+
+model Fornecedor {
+  id          String       @id @default(cuid())
+  tenantId    String
+  name        String
+  phone       String?
+  email       String?
+  document    String?
+  address     Json?
+  notes       String?
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contasPagar ContaPagar[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([tenantId, name])
+  @@map("fornecedores")
+}
+
+model Produto {
+  id          String   @id @default(cuid())
+  tenantId    String
+  type        String   @default("PRODUTO")
+  name        String
+  sellPrice   Int
+  costPrice   Int?
+  unit        String   @default("un")
+  barcode     String?
+  ncm         String?
+  description String?
+  stockMin    Int?     @default(0)
+  trackStock  Boolean  @default(true)
+  active          Boolean  @default(true)
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  movimentacoes   MovimentacaoEstoque[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, name])
+  @@index([tenantId, barcode])
+  @@map("produtos")
+}
+
+model FormaPagamento {
+  id           String   @id @default(cuid())
+  tenantId     String
+  name         String
+  type         String
+  active       Boolean  @default(true)
+  isDefault    Boolean  @default(false)
+  installments Int      @default(1)
+  fee          Int      @default(0)
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vendas       Venda[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("formas_pagamento")
+}
+
+// ==================== FINANCEIRO ====================
+
+model ContaPagar {
+  id             String      @id @default(cuid())
+  tenantId       String
+  description    String
+  amount         Int
+  dueDate        DateTime
+  paidDate       DateTime?
+  status         String      @default("PENDENTE")
+  category       String
+  supplierId     String?
+  notes          String?
+  recurrent      Boolean     @default(false)
+  recurrenceType String?
+  tenant         Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier       Fornecedor? @relation(fields: [supplierId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@index([tenantId, supplierId])
+  @@index([tenantId, status, paidDate])
+  @@map("contas_pagar")
+}
+
+model ContaReceber {
+  id           String    @id @default(cuid())
+  tenantId     String
+  description  String
+  amount       Int
+  dueDate      DateTime
+  receivedDate DateTime?
+  status       String    @default("PENDENTE")
+  category     String
+  clientId     String?
+  saleId       String?
+  notes        String?
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client       Cliente?  @relation(fields: [clientId], references: [id])
+  sale         Venda?    @relation(fields: [saleId], references: [id])
+  pixCharges   PixCharge[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@index([tenantId, clientId])
+  @@index([tenantId, saleId])
+  @@index([tenantId, status, receivedDate])
+  @@map("contas_receber")
+}
+
+// ==================== VENDAS ====================
+
+model Venda {
+  id              String          @id @default(cuid())
+  tenantId        String
+  number          Int?
+  clientId        String?
+  items           Json
+  subtotal        Int
+  discount        Int             @default(0)
+  total           Int
+  paymentMethodId String
+  status          String          @default("RASCUNHO")
+  notes           String?
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client          Cliente?        @relation(fields: [clientId], references: [id])
+  paymentMethod   FormaPagamento  @relation(fields: [paymentMethodId], references: [id])
+  contasReceber   ContaReceber[]
+  orcamentos      Orcamento[]
+  notasFiscais    NotaFiscal[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@map("vendas")
+}
+
+model Orcamento {
+  id         String   @id @default(cuid())
+  tenantId   String
+  number     Int?
+  clientId   String
+  items      Json
+  subtotal   Int
+  discount   Int      @default(0)
+  total      Int
+  validUntil DateTime
+  status     String   @default("PENDENTE")
+  notes      String?
+  saleId     String?
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client     Cliente  @relation(fields: [clientId], references: [id])
+  sale       Venda?   @relation(fields: [saleId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@map("orcamentos")
+}
+
+// ==================== PIX ====================
+
+model PixCharge {
+  id              String       @id @default(cuid())
+  tenantId        String
+  contaReceberId  String
+  externalId      String?
+  amount          Int
+  qrCode          String?
+  qrCodeText      String?
+  paymentLink     String?
+  status          String       @default("PENDING")
+  expiresAt       DateTime
+  paidAt          DateTime?
+  tenant          Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contaReceber    ContaReceber @relation(fields: [contaReceberId], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([tenantId, status])
+  @@index([contaReceberId])
+  @@index([externalId])
+  @@map("pix_charges")
+}
+
+// ==================== WEBHOOKS & NOTIFICATIONS ====================
+
+model WebhookLog {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  source     String
+  eventType  String
+  externalId String?
+  payload    Json
+  status     String   @default("RECEIVED")
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([source, externalId])
+  @@map("webhook_logs")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  tenantId  String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  metadata  Json?
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, read])
+  @@map("notifications")
+}
+
+// ==================== FISCAL ====================
+
+model ConfigFiscal {
+  id                 String    @id @default(cuid())
+  tenantId           String    @unique
+  regimeTributario   String?
+  inscricaoEstadual  String?
+  inscricaoMunicipal String?
+  certificateData    String?
+  certificatePassword String?
+  certificateExpiry  DateTime?
+  ambiente           String    @default("homologacao")
+  serieNFe           Int       @default(1)
+  serieNFSe          Int       @default(1)
+  serieNFCe          Int       @default(1)
+  ultimoNumeroNFe    Int       @default(0)
+  ultimoNumeroNFSe   Int       @default(0)
+  ultimoNumeroNFCe   Int       @default(0)
+  tenant             Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("config_fiscal")
+}
+
+model NotaFiscal {
+  id                  String    @id @default(cuid())
+  tenantId            String
+  type                String
+  saleId              String?
+  numero              Int?
+  serie               Int?
+  chaveAcesso         String?
+  xmlContent          String?
+  pdfUrl              String?
+  status              String    @default("PROCESSANDO")
+  focusNfeId          String?
+  errorMessage        String?
+  emitidaEm           DateTime?
+  canceladaEm         DateTime?
+  motivoCancelamento  String?
+  dadosNota           Json
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sale                Venda?    @relation(fields: [saleId], references: [id])
+  createdAt           DateTime  @default(now())
+
+  @@index([tenantId, type, status])
+  @@index([saleId])
+  @@map("notas_fiscais")
+}
+
+// ==================== WHATSAPP ====================
+
+model WhatsAppMessage {
+  id           String    @id @default(cuid())
+  tenantId     String
+  clientId     String?
+  phone        String
+  type         String    // cobranca, nfe, lembrete, orcamento
+  templateId   String
+  templateVars Json?
+  messageText  String
+  status       String    @default("QUEUED") // QUEUED, SENT, DELIVERED, READ, FAILED
+  externalId   String?
+  errorMessage String?
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  readAt       DateTime?
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client       Cliente?  @relation(fields: [clientId], references: [id])
+  createdAt    DateTime  @default(now())
+
+  @@index([tenantId, type])
+  @@index([tenantId, status])
+  @@map("whatsapp_messages")
+}
+
+model LembreteConfig {
+  id          String  @id @default(cuid())
+  tenantId    String  @unique
+  ativo       Boolean @default(false)
+  diasAntes   Int     @default(3)
+  noDia       Boolean @default(true)
+  diasDepois  Int     @default(1)
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("lembrete_configs")
+}
+
+// ==================== ESTOQUE ====================
+
+model MovimentacaoEstoque {
+  id          String   @id @default(cuid())
+  tenantId    String
+  productId   String
+  type        String   // ENTRADA, SAIDA, AJUSTE
+  quantity    Int
+  reason      String   // compra, venda, ajuste_manual
+  referenceId String?  // saleId or other reference
+  notes       String?
+  produto     Produto  @relation(fields: [productId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, productId])
+  @@index([tenantId, createdAt])
+  @@map("movimentacoes_estoque")
+}
