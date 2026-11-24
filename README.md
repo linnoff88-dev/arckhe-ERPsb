@@ -1,4 +1,4 @@
-﻿# ERPsb
+# ERPsb
 
 <p align="center">
   <img src="doc/erpsb-banner.png" alt="ERPsb - Sistema Integrado de Gestao" width="700">
@@ -290,7 +290,7 @@ src/
 
 ```bash
 # 1. Clonar o repositorio
-git clone git@github.com:inematds/ERPsb.git
+git clone git@github.com:linnoff88-dev/ERPsb.git
 cd ERPsb
 
 # 2. Instalar dependencias
@@ -739,8 +739,8 @@ Projeto privado - todos os direitos reservados.
 
 ---
 
-*ERPsb v1.2.1 - Criado por [inematds](https://github.com/inematds)*
+*ERPsb v1.2.1 - Criado por [linnoff88-dev](https://github.com/linnoff88-dev)*
 
 ---
 
-Projeto adaptado da comunidade INEMA TDS - Marca Arckhe
+Projeto adaptado da comunidade ARCKHÉ TDS - Marca Arckhe

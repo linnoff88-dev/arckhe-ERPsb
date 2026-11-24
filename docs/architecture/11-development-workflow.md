@@ -11,7 +11,7 @@ git >= 2.40.0
 ### 11.2 Initial Setup
 
 ```bash
-git clone git@github.com:inematds/ERPsb.git
+git clone git@github.com:linnoff88-dev/ERPsb.git
 cd ERPsb
 pnpm install
 cp .env.example .env.local
