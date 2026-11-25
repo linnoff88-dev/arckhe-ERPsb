@@ -743,4 +743,4 @@ Projeto privado - todos os direitos reservados.
 
 ---
 
-Projeto adaptado da comunidade ARCKHÉ TDS - Marca Arckhe
+Projeto adaptado da comunidade ARCKHÉ TDS - ARCKHÉe

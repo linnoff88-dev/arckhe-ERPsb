@@ -224,7 +224,7 @@ export default function ProdutoDetalhePage() {
         <EmptyState
           icon={ShoppingCart}
           title="Historico de Vendas"
-          description="As vendas deste produto aparecerão aqui"
+          description="As vendas deste produto aparecerêo aqui"
         />
       </Card>
 

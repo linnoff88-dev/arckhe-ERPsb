@@ -204,7 +204,7 @@ export default function FornecedorDetalhePage() {
         <EmptyState
           icon={ShoppingBag}
           title="Historico de Compras"
-          description="As compras deste fornecedor aparecerão aqui"
+          description="As compras deste fornecedor aparecerêo aqui"
         />
       </Card>
 

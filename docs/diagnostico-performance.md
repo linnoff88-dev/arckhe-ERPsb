@@ -7,8 +7,8 @@
 
 ## Resumo Executivo
 
-A lentidão afeta **todos os módulos** porque a causa raiz está no pipeline que roda em cada request:
-- 1 query extra no banco para buscar tenantId (já está no JWT mas não é usado)
+A lentidêo afeta **todos os módulos** porque a causa raiz está no pipeline que roda em cada request:
+- 1 query extra no banco para buscar tenantId (já está no JWT mas nêo é usado)
 - `auth()` chamado 2x por request (Edge Middleware + withTenantApi)
 - Latência de rede ao Supabase remoto (~30-80ms por query)
 - Zero cache em qualquer camada (API, browser, componentes)
@@ -136,7 +136,7 @@ Indexes que **faltam**:
 - `[tenantId, status, receivedDate]` em ContaReceber (aggregate com filtro composto)
 - `[externalId]` em PixCharge (webhook lookup)
 
-### MÉDIO 4: Confirmação de Venda = 4+N Queries
+### MÉDIO 4: Confirmaçêo de Venda = 4+N Queries
 
 **Arquivo:** `src/modules/vendas/venda.service.ts:30-80`
 
@@ -146,35 +146,35 @@ Indexes que **faltam**:
 4. `create` - cria ContaReceber
 5. N x `create` - registra saída estoque (1 por item)
 
-### MÉDIO 5: Conversão Orçamento → Venda = 6+ Queries
+### MÉDIO 5: Conversêo Orçamento → Venda = 6+ Queries
 
 **Arquivo:** `src/modules/vendas/orcamento.service.ts:120-161`
 
-Encadeia `createVenda` → `confirmVenda` → `update orcamento` sem transação.
+Encadeia `createVenda` → `confirmVenda` → `update orcamento` sem transaçêo.
 
 ### BAIXO: Nota Fiscal = 7 Queries
 
 **Arquivo:** `src/modules/fiscal/nota-fiscal.service.ts`
 
-Cada emissão (NFe/NFSe/NFCe): findUnique + findFirst + findUnique + findUnique + upsert + create + update.
+Cada emissêo (NFe/NFSe/NFCe): findUnique + findFirst + findUnique + findUnique + upsert + create + update.
 
 ---
 
 ## FRONTEND - Problemas Encontrados
 
-### CRÍTICO 1: 30 de 34 Páginas São 'use client'
+### CRÍTICO 1: 30 de 34 Páginas Sêo 'use client'
 
 **Impacto:** Perde SSR/streaming do Next.js 15, bundle JS maior, hydration overhead
 
-Todas as páginas de listagem e formulários são Client Components. O ciclo é sempre:
+Todas as páginas de listagem e formulários sêo Client Components. O ciclo é sempre:
 render esqueleto → loading → fetch API → re-render com dados
 
 ### CRÍTICO 2: Zero Caching de Dados (sem SWR/React-Query)
 
-**Impacto:** Refetch completo a cada navegação
+**Impacto:** Refetch completo a cada navegaçêo
 
 ```typescript
-// Padrão atual: useEffect + fetch manual
+// Padrêo atual: useEffect + fetch manual
 useEffect(() => {
   async function fetchAll() {
     const [dashRes, alertRes] = await Promise.all([
@@ -186,7 +186,7 @@ useEffect(() => {
 }, []);
 ```
 
-Sem staleTime, sem cache, sem revalidação em background, sem deduplicação.
+Sem staleTime, sem cache, sem revalidaçêo em background, sem deduplicaçêo.
 
 ### CRÍTICO 3: Zero Dynamic Imports
 
@@ -197,7 +197,7 @@ Recharts (~100KB+), formulários grandes (446 linhas, 410 linhas) carregam eager
 ### ALTO 1: useTenant Fetch em Cada Mount
 
 **Arquivo:** `src/hooks/use-tenant.ts`
-**Impacto:** Request extra a cada navegação
+**Impacto:** Request extra a cada navegaçêo
 
 Busca `/api/v1/tenants` toda vez que um componente monta, sem cache.
 
@@ -216,7 +216,7 @@ replaysOnErrorSampleRate: 1.0,
 ### ALTO 3: SessionProvider Envolve Todo o Dashboard
 
 **Arquivo:** `src/app/(dashboard)/layout.tsx`
-**Impacto:** Re-renders em cascata ao mudar estado da sessão
+**Impacto:** Re-renders em cascata ao mudar estado da sessêo
 
 Header, Sidebar, BottomNav, Fab, OfflineBanner, InstallBanner - todos renderizados em cada page load.
 
@@ -225,12 +225,12 @@ Header, Sidebar, BottomNav, Fab, OfflineBanner, InstallBanner - todos renderizad
 **Impacto:** Re-renders desnecessários em componentes de lista e dashboard
 
 - `SummaryCard`, `UpcomingSection` no dashboard
-- Itens de lista sem memoização
-- Formatação de datas inline em cada render
+- Itens de lista sem memoizaçêo
+- Formataçêo de datas inline em cada render
 
 ### MÉDIO 2: Sem next/image
 
-**Impacto:** Imagens (se usadas) sem otimização, lazy-load ou WebP
+**Impacto:** Imagens (se usadas) sem otimizaçêo, lazy-load ou WebP
 
 ### MÉDIO 3: Google Fonts no Root Layout
 
@@ -239,7 +239,7 @@ Header, Sidebar, BottomNav, Fab, OfflineBanner, InstallBanner - todos renderizad
 
 ### BAIXO (BOM): Debounce Implementado
 
-300ms de debounce nos inputs de busca. Padrão correto com `setTimeout` + cleanup.
+300ms de debounce nos inputs de busca. Padrêo correto com `setTimeout` + cleanup.
 
 ### BAIXO (BOM): Zustand é Leve
 
@@ -247,9 +247,9 @@ Estado global com Zustand é uma boa escolha de performance.
 
 ---
 
-## Latência Estimada por Operação
+## Latência Estimada por Operaçêo
 
-| Operação | Queries (tenant + dados) | Tempo Estimado |
+| Operaçêo | Queries (tenant + dados) | Tempo Estimado |
 |----------|--------------------------|----------------|
 | Abrir qualquer listagem | 1 + 2 | ~150-240ms |
 | Buscar/filtrar (cada keystroke) | 1 + 2 | ~150-240ms |
@@ -261,89 +261,89 @@ Estado global com Zustand é uma boa escolha de performance.
 
 ---
 
-## Plano de Ação - Ordenado por Impacto/Esforço
+## Plano de Açêo - Ordenado por Impacto/Esforço
 
 ### Fase 1: Quick Wins (impacto imediato, risco baixo)
 
-#### Ação 1.1: Usar tenantId do JWT ao invés de query no banco
+#### Açêo 1.1: Usar tenantId do JWT ao invés de query no banco
 - **Arquivo:** `src/core/tenant/tenant.middleware.ts`
 - **O quê:** Expor `activeTenantId` do token JWT na session e usar direto no `withTenantApi`
 - **Também:** `src/core/auth/auth.ts` - incluir `activeTenantId` no objeto session
 - **Economia:** ~50ms em CADA request (51 endpoints)
-- **Risco:** Baixo - fallback para query se não tiver no JWT
+- **Risco:** Baixo - fallback para query se nêo tiver no JWT
 
-#### Ação 1.2: Remover log 'query' do Prisma em dev
+#### Açêo 1.2: Remover log 'query' do Prisma em dev
 - **Arquivo:** `src/lib/prisma.ts:13`
 - **O quê:** Mudar para `['error', 'warn']`
 - **Economia:** ~10-30ms por query em dev
 - **Risco:** Zero
 
-#### Ação 1.3: Adicionar indexes compostos faltantes
+#### Açêo 1.3: Adicionar indexes compostos faltantes
 - **Arquivo:** `prisma/schema.prisma`
-- **O quê:** Adicionar indexes listados na seção "Indexes que faltam"
+- **O quê:** Adicionar indexes listados na seçêo "Indexes que faltam"
 - **Economia:** Queries de aggregate/join passam de scan para index lookup
 - **Risco:** Zero (migration apenas adiciona)
 
-#### Ação 1.4: Reduzir Sentry tracesSampleRate
+#### Açêo 1.4: Reduzir Sentry tracesSampleRate
 - **Arquivos:** `sentry.client.config.ts`, `sentry.server.config.ts`
 - **O quê:** Mudar `tracesSampleRate` de `1.0` para `0.1` ou `0.2`
-- **Economia:** Menos overhead de instrumentação em cada request
+- **Economia:** Menos overhead de instrumentaçêo em cada request
 - **Risco:** Menos dados de performance no Sentry (0.1 = 10% é suficiente)
 
-### Fase 2: Caching (maior ganho de percepção de velocidade)
+### Fase 2: Caching (maior ganho de percepçêo de velocidade)
 
-#### Ação 2.1: Implementar SWR ou React-Query no frontend
+#### Açêo 2.1: Implementar SWR ou React-Query no frontend
 - **Escopo:** Todos os hooks de fetch
 - **O quê:** Substituir `useEffect + fetch` por SWR com `staleTime` e `revalidateOnFocus`
-- **Economia:** Navegação entre páginas usa cache, refetch em background
-- **Risco:** Médio - precisa testar invalidação
+- **Economia:** Navegaçêo entre páginas usa cache, refetch em background
+- **Risco:** Médio - precisa testar invalidaçêo
 
-#### Ação 2.2: Cache HTTP nas respostas de API
+#### Açêo 2.2: Cache HTTP nas respostas de API
 - **Escopo:** Endpoints de listagem e dashboard
 - **O quê:** Adicionar `Cache-Control: private, max-age=30` (dashboard) e `max-age=300` (listas)
 - **Economia:** Browser reutiliza resposta sem request
 - **Risco:** Baixo - dados podem ter até 30s de atraso
 
-#### Ação 2.3: Cache in-memory no dashboard/alertas
+#### Açêo 2.3: Cache in-memory no dashboard/alertas
 - **Arquivos:** `dashboard.service.ts`, `alerta.service.ts`
 - **O quê:** `unstable_cache` do Next.js ou Map com TTL de 30-60s
 - **Economia:** 26 queries viram 0 por 30-60 segundos
-- **Risco:** Baixo - dados financeiros de 1 min atrás são aceitáveis
+- **Risco:** Baixo - dados financeiros de 1 min atrás sêo aceitáveis
 
-#### Ação 2.4: Cachear resultado do useTenant
+#### Açêo 2.4: Cachear resultado do useTenant
 - **Arquivo:** `src/hooks/use-tenant.ts`
 - **O quê:** Guardar em sessionStorage ou usar SWR com staleTime longo
-- **Economia:** Elimina 1 request por navegação
+- **Economia:** Elimina 1 request por navegaçêo
 - **Risco:** Baixo
 
-### Fase 3: Consolidação de Queries (reduz carga no banco)
+### Fase 3: Consolidaçêo de Queries (reduz carga no banco)
 
-#### Ação 3.1: Consolidar dashboard em menos queries
+#### Açêo 3.1: Consolidar dashboard em menos queries
 - **Arquivo:** `dashboard.service.ts`
 - **O quê:** Raw SQL com `CASE WHEN` para calcular hoje/semana/mês em 1 query por tabela
 - **Exemplo:** 10 aggregates em ContaReceber/ContaPagar → 2 raw queries
 - **Economia:** 15 queries → ~4 queries
 - **Risco:** Médio - precisa manter e testar SQL raw
 
-#### Ação 3.2: Consolidar dashboard + alertas
+#### Açêo 3.2: Consolidar dashboard + alertas
 - **Arquivos:** `dashboard.service.ts`, `alerta.service.ts`
 - **O quê:** Unificar em 1 endpoint que retorna tudo, reaproveitando cálculos de saldo
 - **Economia:** Elimina 4 queries duplicadas de saldo
 - **Risco:** Baixo
 
-#### Ação 3.3: Batch no processamento de lembretes
+#### Açêo 3.3: Batch no processamento de lembretes
 - **Arquivo:** `src/modules/whatsapp/lembrete.service.ts`
 - **O quê:** Buscar todas as mensagens já enviadas em 1 query (WHERE IN), depois filtrar em memória
 - **Economia:** 100+ queries → 1 query
 - **Risco:** Baixo
 
-#### Ação 3.4: Usar createMany no estoque
+#### Açêo 3.4: Usar createMany no estoque
 - **Arquivo:** `src/modules/estoque/estoque.service.ts`
 - **O quê:** Substituir `Promise.all(items.map(create))` por `createMany`
 - **Economia:** N queries → 1 query
 - **Risco:** Zero
 
-#### Ação 3.5: Mover markExpired para background/cron
+#### Açêo 3.5: Mover markExpired para background/cron
 - **Arquivos:** `orcamento.service.ts`, `pix.service.ts`
 - **O quê:** Remover `await markExpired()` da listagem, executar via cron/serverless
 - **Economia:** 1 bulk update a menos por listagem
@@ -351,22 +351,22 @@ Estado global com Zustand é uma boa escolha de performance.
 
 ### Fase 4: Frontend Architecture (maior esforço, maior ganho a longo prazo)
 
-#### Ação 4.1: Dynamic imports para Recharts e formulários grandes
+#### Açêo 4.1: Dynamic imports para Recharts e formulários grandes
 - **O quê:** `const CashFlowChart = dynamic(() => import('./cash-flow-chart'), { ssr: false })`
 - **Economia:** ~100KB+ a menos no bundle inicial do dashboard
 - **Risco:** Baixo
 
-#### Ação 4.2: Migrar páginas de listagem para Server Components
-- **O quê:** Separar data fetching (Server) de interação (Client)
+#### Açêo 4.2: Migrar páginas de listagem para Server Components
+- **O quê:** Separar data fetching (Server) de interaçêo (Client)
 - **Economia:** Menos JS no client, streaming com Suspense
-- **Risco:** Alto - requer refatoração significativa
+- **Risco:** Alto - requer refatoraçêo significativa
 
-#### Ação 4.3: Adicionar React.memo nos componentes de lista
+#### Açêo 4.3: Adicionar React.memo nos componentes de lista
 - **O quê:** Memo em `SummaryCard`, cards de listagem, `UpcomingSection`
 - **Economia:** Menos re-renders
 - **Risco:** Baixo
 
-#### Ação 4.4: Reduzir escopo do SessionProvider
+#### Açêo 4.4: Reduzir escopo do SessionProvider
 - **Arquivo:** `src/app/(dashboard)/layout.tsx`
 - **O quê:** Mover SessionProvider para envolver apenas componentes que precisam
 - **Economia:** Menos re-renders em cascata
@@ -379,8 +379,8 @@ Estado global com Zustand é uma boa escolha de performance.
 | Fase | Esforço | Ganho Estimado | Risco |
 |------|---------|----------------|-------|
 | Fase 1: Quick Wins | 1-2 horas | ~30% mais rápido em tudo | Baixo |
-| Fase 2: Caching | 3-5 horas | ~50% mais rápido (percepção) | Baixo-Médio |
-| Fase 3: Consolidação | 4-6 horas | ~40% menos carga no banco | Médio |
+| Fase 2: Caching | 3-5 horas | ~50% mais rápido (percepçêo) | Baixo-Médio |
+| Fase 3: Consolidaçêo | 4-6 horas | ~40% menos carga no banco | Médio |
 | Fase 4: Frontend | 8-16 horas | ~30% menos JS, melhor UX | Alto |
 
-**Recomendação:** Implementar Fases 1 e 2 primeiro. Juntas resolvem ~80% da lentidão percebida com esforço relativamente baixo.
+**Recomendaçêo:** Implementar Fases 1 e 2 primeiro. Juntas resolvem ~80% da lentidêo percebida com esforço relativamente baixo.

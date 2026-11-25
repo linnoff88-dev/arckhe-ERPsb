@@ -46,7 +46,7 @@ function cnpj(): string {
 
 const CLIENTES = [
   { name: 'Maria da Silva Santos', phone: '(47) 99234-5678', document: cpf(), email: 'maria.silva@email.com' },
-  { name: 'João Pedro Oliveira', phone: '(47) 99345-6789', document: cpf(), email: null },
+  { name: 'Joêo Pedro Oliveira', phone: '(47) 99345-6789', document: cpf(), email: null },
   { name: 'Ana Carolina Souza', phone: '(47) 99456-7890', document: null, email: 'ana.souza@gmail.com' },
   { name: 'Carlos Eduardo Lima', phone: '(47) 99567-8901', document: cpf(), email: null },
   { name: 'Fernanda Rodrigues Costa', phone: '(47) 99678-9012', document: null, email: null },
@@ -69,7 +69,7 @@ const CLIENTES = [
 
 const FORNECEDORES = [
   { name: 'Distribuidora Têxtil Sul Ltda', phone: '(47) 3333-1234', document: cnpj(), email: 'vendas@textilsul.com.br' },
-  { name: 'Atacadão Moda & Cia', phone: '(11) 4444-5678', document: cnpj(), email: 'pedidos@modaecia.com.br' },
+  { name: 'Atacadêo Moda & Cia', phone: '(11) 4444-5678', document: cnpj(), email: 'pedidos@modaecia.com.br' },
   { name: 'Import Calçados Brasil', phone: '(11) 4555-6789', document: cnpj(), email: 'contato@importcalcados.com.br' },
   { name: 'Acessórios & Bijuterias Nacional', phone: '(21) 3666-7890', document: cnpj(), email: 'comercial@acessoriosnacional.com.br' },
   { name: 'Confecções Estrela do Norte', phone: '(47) 3777-8901', document: cnpj(), email: 'vendas@estreladonorte.com.br' },
@@ -238,10 +238,10 @@ async function main() {
       data: { tenantId, name: 'Dinheiro', type: 'DINHEIRO', fee: 0 },
     }),
     prisma.formaPagamento.create({
-      data: { tenantId, name: 'Cartão Débito', type: 'DEBITO', fee: 0 },
+      data: { tenantId, name: 'Cartêo Débito', type: 'DEBITO', fee: 0 },
     }),
     prisma.formaPagamento.create({
-      data: { tenantId, name: 'Cartão Crédito', type: 'CREDITO', fee: 200, installments: 3 },
+      data: { tenantId, name: 'Cartêo Crédito', type: 'CREDITO', fee: 200, installments: 3 },
     }),
   ]);
 
@@ -691,10 +691,10 @@ async function main() {
         tenantId,
         description: pick([
           'Google Ads - Campanha mensal',
-          'Instagram Ads - Promoção',
+          'Instagram Ads - Promoçêo',
           'Panfletos e material gráfico',
-          'Decoração vitrine',
-          'Facebook Ads - Divulgação',
+          'Decoraçêo vitrine',
+          'Facebook Ads - Divulgaçêo',
         ]),
         amount: brl(randInt(200, 800)),
         dueDate: marketingDate,
@@ -713,12 +713,12 @@ async function main() {
   // Add specific overdue bills
   contasPagar.push({
     tenantId,
-    description: 'Manutenção Ar Condicionado',
+    description: 'Manutençêo Ar Condicionado',
     amount: brl(450),
     dueDate: new Date(2026, 0, 28),
     paidDate: null,
     status: 'VENCIDO',
-    category: 'Manutenção',
+    category: 'Manutençêo',
     supplierId: null,
     recurrent: false,
     recurrenceType: null,

@@ -71,7 +71,7 @@ No build, lint, or test commands are configured yet (will be defined during arch
 
 - Usability over complexity
 - Simple processes before advanced automation
-- Financial module is the core ("financeiro é o coração")
+- Financial module is the core ("financeiro é o coraçêo")
 - Tax/fiscal features must not block operations
 - Everything built in MVP must scale without structural rework
 - Modular architecture, APIs from the start, centralized business rules

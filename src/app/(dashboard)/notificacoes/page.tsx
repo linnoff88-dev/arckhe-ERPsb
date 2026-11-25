@@ -8,7 +8,7 @@ export default function NotificacoesPage() {
       <EmptyState
         icon={Bell}
         title="Nenhuma notificacao"
-        description="Quando houver novidades como PIX recebido ou alertas financeiros, elas aparecerão aqui"
+        description="Quando houver novidades como PIX recebido ou alertas financeiros, elas aparecerêo aqui"
       />
     </div>
   );
